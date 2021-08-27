@@ -6507,6 +6507,11 @@ graphql@15.5.1:
   resolved "https://registry.yarnpkg.com/graphql/-/graphql-15.5.1.tgz#f2f84415d8985e7b84731e7f3536f8bb9d383aad"
   integrity sha512-FeTRX67T3LoE3LWAxxOlW2K3Bz+rMYAC18rRguK4wgXaTZMiJwSUwDmPFo3UadAKbzirKIg5Qy+sNJXbpPRnQw==
 
+graphql@16.0.0-rc.1:
+  version "16.0.0-rc.1"
+  resolved "https://registry.yarnpkg.com/graphql/-/graphql-16.0.0-rc.1.tgz#745761de02ed87dbb3b901d202e5faf9a9146d9d"
+  integrity sha512-xcRTeAggyCVGij7mDl+HK57cbeCh45XLQHwZwVmKsBWA1tuXaKwj0b+H2o9MqkgrgNFJolYIkm8u7SOqcHWrsA==
+
 graphql@^14.5.3:
   version "14.7.0"
   resolved "https://registry.npmjs.org/graphql/-/graphql-14.7.0.tgz#7fa79a80a69be4a31c27dda824dc04dac2035a72"
