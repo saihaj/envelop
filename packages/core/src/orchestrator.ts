@@ -310,10 +310,12 @@ export function createEnvelopOrchestrator<PluginsContext = any>(plugins: Plugin[
       context[resolversHooksSymbol] = onResolversHandlers;
     }
 
-    let result = await subscribeFn({
+    let result = (await subscribeFn({
       ...args,
       contextValue: context,
-    });
+      // Casted for GraphQL.js 15 compatibility
+      // Can be removed once we drop support for GraphQL.js 15
+    })) as AsyncGenerator<ExecutionResult, void, void> | ExecutionResult;
 
     const onNextHandler: OnSubscribeResultResultOnNextHook[] = [];
     const onEndHandler: OnSubscribeResultResultOnEndHook[] = [];
@@ -322,7 +324,7 @@ export function createEnvelopOrchestrator<PluginsContext = any>(plugins: Plugin[
       const hookResult = afterCb({
         result,
         setResult: newResult => {
-          result = newResult as any;
+          result = newResult;
         },
       });
       if (hookResult) {
@@ -348,12 +350,10 @@ export function createEnvelopOrchestrator<PluginsContext = any>(plugins: Plugin[
         for (const onEnd of onEndHandler) {
           onEnd();
         }
-        // we cast it as any because GraphQL.js 16 changed types
-      }) as any;
+      });
     }
     return result;
-    // we cast it as any because GraphQL.js 16 changed types
-  }) as any;
+  });
 
   const customExecute = beforeCallbacks.execute.length
     ? makeExecute(async args => {
@@ -362,9 +362,7 @@ export function createEnvelopOrchestrator<PluginsContext = any>(plugins: Plugin[
         let result: AsyncGeneratorOrValue<ExecutionResult>;
 
         const afterCalls: OnExecuteDoneHook[] = [];
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore contextValue is now of type unknown
-        let context: object = args.contextValue || {};
+        let context: object = (args.contextValue as any) || {};
 
         for (const onExecute of beforeCallbacks.execute) {
           let stopCalled = false;
@@ -413,10 +411,12 @@ export function createEnvelopOrchestrator<PluginsContext = any>(plugins: Plugin[
           context[resolversHooksSymbol] = onResolversHandlers;
         }
 
-        result = await executeFn({
+        result = (await executeFn({
           ...args,
           contextValue: context,
-        });
+          // Casted for defer/stream compatibility
+          // Can be removed once we drop support for GraphQL.js 16 (and GraphQL.js 17 actually introduced defer/stream support...)
+        })) as AsyncGeneratorOrValue<ExecutionResult>;
 
         const onNextHandler: OnExecuteDoneHookResultOnNextHook[] = [];
         const onEndHandler: OnExecuteDoneHookResultOnEndHook[] = [];
@@ -439,7 +439,7 @@ export function createEnvelopOrchestrator<PluginsContext = any>(plugins: Plugin[
         }
 
         if (onNextHandler.length && isAsyncIterable(result)) {
-          result = mapAsyncIterator(result as AsyncGenerator<ExecutionResult, void, void>, async result => {
+          result = mapAsyncIterator(result, async result => {
             for (const onNext of onNextHandler) {
               await onNext({ result, setResult: newResult => (result = newResult) });
             }
