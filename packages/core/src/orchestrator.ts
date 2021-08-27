@@ -277,7 +277,7 @@ export function createEnvelopOrchestrator<PluginsContext = any>(plugins: Plugin[
       }
     : initialContext => orchestratorCtx => orchestratorCtx ? { ...initialContext, ...orchestratorCtx } : initialContext;
 
-  const customSubscribe = makeSubscribe(async args => {
+  const customSubscribe: typeof subscribe = makeSubscribe(async args => {
     const onResolversHandlers: OnResolverCalledHook[] = [];
     let subscribeFn = subscribe as SubscribeFunction;
 
@@ -322,7 +322,7 @@ export function createEnvelopOrchestrator<PluginsContext = any>(plugins: Plugin[
       const hookResult = afterCb({
         result,
         setResult: newResult => {
-          result = newResult;
+          result = newResult as any;
         },
       });
       if (hookResult) {
@@ -348,10 +348,12 @@ export function createEnvelopOrchestrator<PluginsContext = any>(plugins: Plugin[
         for (const onEnd of onEndHandler) {
           onEnd();
         }
-      });
+        // we cast it as any because GraphQL.js 16 changed types
+      }) as any;
     }
     return result;
-  });
+    // we cast it as any because GraphQL.js 16 changed types
+  }) as any;
 
   const customExecute = beforeCallbacks.execute.length
     ? makeExecute(async args => {
