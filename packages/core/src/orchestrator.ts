@@ -22,7 +22,7 @@ import {
   OnExecuteDoneHookResultOnNextHook,
   OnExecuteDoneHookResultOnEndHook,
   ExecuteFunction,
-  AsyncIterableIteratorOrValue,
+  AsyncGeneratorOrValue,
   isAsyncIterable,
 } from '@envelop/types';
 import {
@@ -282,7 +282,7 @@ export function createEnvelopOrchestrator<PluginsContext = any>(plugins: Plugin[
     let subscribeFn = subscribe as SubscribeFunction;
 
     const afterCalls: SubscribeResultHook[] = [];
-    let context = args.contextValue || {};
+    let context: object = (args.contextValue as any) || {};
 
     for (const onSubscribe of beforeCallbacks.subscribe) {
       const after = await onSubscribe({
@@ -357,10 +357,12 @@ export function createEnvelopOrchestrator<PluginsContext = any>(plugins: Plugin[
     ? makeExecute(async args => {
         const onResolversHandlers: OnResolverCalledHook[] = [];
         let executeFn = execute as ExecuteFunction;
-        let result: AsyncIterableIteratorOrValue<ExecutionResult>;
+        let result: AsyncGeneratorOrValue<ExecutionResult>;
 
         const afterCalls: OnExecuteDoneHook[] = [];
-        let context = args.contextValue || {};
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore contextValue is now of type unknown
+        let context: object = args.contextValue || {};
 
         for (const onExecute of beforeCallbacks.execute) {
           let stopCalled = false;
@@ -435,7 +437,7 @@ export function createEnvelopOrchestrator<PluginsContext = any>(plugins: Plugin[
         }
 
         if (onNextHandler.length && isAsyncIterable(result)) {
-          result = mapAsyncIterator(result, async result => {
+          result = mapAsyncIterator(result as AsyncGenerator<ExecutionResult, void, void>, async result => {
             for (const onNext of onNextHandler) {
               await onNext({ result, setResult: newResult => (result = newResult) });
             }
